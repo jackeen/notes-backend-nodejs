@@ -3,7 +3,14 @@
  */
 
 // import path from "path";
-import {Middleware} from "./types";
+import { Middleware } from "koa";
+
+// for router using it to collect restful params during request
+declare module "koa" {
+	interface DefaultContext {
+		params: Map<string, any>;
+	}
+}
 
 interface RouterNode {
 	name: string;
@@ -135,20 +142,20 @@ class Router {
 		this._insertTrie('GET', endpoint, this._nestMiddlewareList(handlers));
 	}
 
-	public post (endpoint: string, handler: Middleware) {
-		this._insertTrie('POST', endpoint, handler);
+	public post (endpoint: string, ...handlers: Middleware[]) {
+		this._insertTrie('POST', endpoint, this._nestMiddlewareList(handlers));
 	}
 
-	public put (endpoint: string, handler: Middleware) {
-		this._insertTrie('PUT', endpoint, handler);
+	public put (endpoint: string, ...handlers: Middleware[]) {
+		this._insertTrie('PUT', endpoint, this._nestMiddlewareList(handlers));
 	}
 
-	public patch (endpoint: string, handler: Middleware) {
-		this._insertTrie('PATCH', endpoint, handler);
+	public patch (endpoint: string, ...handlers: Middleware[]) {
+		this._insertTrie('PATCH', endpoint, this._nestMiddlewareList(handlers));
 	}
 
-	public delete (endpoint: string, handler: Middleware) {
-		this._insertTrie('DELETE', endpoint, handler);
+	public delete (endpoint: string, ...handlers: Middleware[]) {
+		this._insertTrie('DELETE', endpoint, this._nestMiddlewareList(handlers));
 	}
 
 	public route (): Middleware {
