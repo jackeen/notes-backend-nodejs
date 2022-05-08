@@ -48,17 +48,21 @@ app.use(router.route());
 
 
 
-const port = 8080
+const port = parseInt(process.env.SERVER_PORT, 10) || 8080;
 const server = http.createServer(app.callback());
+
 server.addListener('listening', () => {
 	Logger.info(`Server bind on: ${port}`);
 });
+
 server.addListener('error', (err) => {
 	Logger.error(`${err.message}`);
 });
+
 server.addListener('close', () => {
 	Logger.info('Server closed');
 });
+
 server.listen(port);
 
 
