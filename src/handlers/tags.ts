@@ -71,9 +71,13 @@ class Tags extends Handler {
 
 		const client = await this.db.connect();
 		try {
-			const result = await client.query('select 1 from tags where id=$1', [id]);
+			let result = await client.query('select 1 from tags where id=$1', [id]);
 			if (result.rowCount === 0) {
 				ctx.throw(404);
+			}
+			result = await client.query('select 1 from tags where title=$1', [title]);
+			if (result.rowCount !== 0) {
+				ctx.throw(409);
 			}
 			await client.query('update tags set title=$1 where id=$2', [title, id]);
 			ctx.body = {

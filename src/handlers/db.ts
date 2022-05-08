@@ -1,5 +1,6 @@
 import { Pool, PoolConfig, PoolClient } from "pg";
 import Tags from "./tags";
+import Cates from "./cates";
 
 interface Note {
 	id: number;
@@ -55,9 +56,11 @@ async function closeDatabaseConnections() {
 }
 
 const tags = new Tags(db);
+const cates = new Cates(db);
 
 export type {Note, Tag, Cate, Image, ImageGroup};
 export {
 	closeDatabaseConnections,
 	tags,
+	cates,
 }

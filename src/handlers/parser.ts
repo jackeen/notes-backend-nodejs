@@ -1,5 +1,5 @@
 import { QueryResult, QueryResultRow } from "pg";
-import { Tag } from "./db";
+import { Cate, Tag } from "./db";
 
 
 class Parser {
@@ -18,6 +18,19 @@ class Parser {
 		return data;
 	}
 
+	static cate(o: any): Cate {
+		return {
+			id: o.id,
+			title: o.title,
+		}
+	}
+	static cates(res: QueryResult): Cate[] {
+		const data: Cate[] = [];
+		res.rows.forEach((v: any) => {
+			data.push(this.cate(v));
+		});
+		return data;
+	}
 
 }
 
