@@ -9,6 +9,7 @@ import errorCatch from "./errors";
 
 import Auth from "./auth/validate";
 import * as Tag from "./handlers/tag";
+import * as Cate from "./handlers/cate";
 
 const app = new Koa();
 const router = new Router();
@@ -34,10 +35,10 @@ router.post('/tags', Auth.validate('post:tag'), Tag.insert);
 router.patch('/tags/:id', Auth.validate('patch:tag'), Tag.update);
 router.delete('/tags/:id', Auth.validate('delete:tag'), Tag.remove);
 
-// router.get('/cates', Auth.validate('get:cate'), cates.get);
-// router.post('/cates', Auth.validate('post:cate'), cates.post);
-// router.patch('/cates/:id', Auth.validate('patch:cate'), cates.patch);
-// router.delete('/cates/:id', Auth.validate('delete:cate'), cates.delete);
+router.get('/cates', Auth.validate('get:cate'), Cate.getAll);
+router.post('/cates', Auth.validate('post:cate'), Cate.insert);
+router.patch('/cates/:id', Auth.validate('patch:cate'), Cate.update);
+router.delete('/cates/:id', Auth.validate('delete:cate'), Cate.remove);
 
 // router.get('/notes', Auth.validate('get:note'), notes.get);
 // router.post('/notes', Auth.validate('post:note'), notes.post);

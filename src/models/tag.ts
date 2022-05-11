@@ -52,7 +52,7 @@ class Tag implements ITag{
 	}
 
 	async getAll(): Promise<ITag[]> {
-		const sql = 'select * from tags';
+		const sql = 'select * from tags order by id';
 		const result = await this.pool.query(sql);
 		return Promise.resolve(this._formatResult(result));
 	}
