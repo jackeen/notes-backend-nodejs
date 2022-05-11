@@ -1,45 +1,5 @@
 import { Pool, PoolConfig, PoolClient } from "pg";
-import Tags from "./tags";
-import Cates from "./cates";
 
-interface Note {
-	id: number;
-	title?: string;
-	contents?: string;
-	poster?: string;
-	createDate: Date;
-	editDate: Date;
-	cateId: number;
-	isDraft: boolean;
-}
-
-interface Cate {
-	id: number;
-	title: string;
-}
-
-interface Tag {
-	id: number;
-	title: string;
-}
-
-interface Image {
-	id: number;
-	title: string;
-	width: number;
-	height: number;
-	fileSize: number;
-	fileName: string;
-	filePath: string;
-	fileType: string;
-	groupId: number;
-}
-
-interface ImageGroup {
-	id: number;
-	title: string;
-	total: number;
-}
 
 const db = new Pool({
 	max: parseInt(process.env.DATABASE_MAX_CONNECTION, 10) || 10,
@@ -51,16 +11,7 @@ const db = new Pool({
 	connectionTimeoutMillis: 5 * 1000,
 });
 
-async function closeDatabaseConnections() {
-	await db.end();
-}
 
-const tags = new Tags(db);
-const cates = new Cates(db);
-
-export type {Note, Tag, Cate, Image, ImageGroup};
 export {
-	closeDatabaseConnections,
-	tags,
-	cates,
+	db,
 }

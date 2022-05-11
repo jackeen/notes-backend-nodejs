@@ -8,7 +8,7 @@ import {Logger} from "./logger";
 import errorCatch from "./errors";
 
 import Auth from "./auth/validate";
-import {tags, cates} from "./handlers/db";
+import * as Tag from "./handlers/tag";
 
 const app = new Koa();
 const router = new Router();
@@ -29,15 +29,20 @@ router.get('/', (ctx) => {
 // });
 
 
-router.get('/tags', Auth.validate('get:tag'), tags.get);
-router.post('/tags', Auth.validate('post:tag'), tags.post);
-router.patch('/tags/:id', Auth.validate('patch:tag'), tags.patch);
-router.delete('/tags/:id', Auth.validate('delete:tag'), tags.delete);
+router.get('/tags', Auth.validate('get:tag'), Tag.getAll);
+router.post('/tags', Auth.validate('post:tag'), Tag.insert);
+router.patch('/tags/:id', Auth.validate('patch:tag'), Tag.update);
+router.delete('/tags/:id', Auth.validate('delete:tag'), Tag.remove);
 
-router.get('/cates', Auth.validate('get:cate'), cates.get);
-router.post('/cates', Auth.validate('post:cate'), cates.post);
-router.patch('/cates/:id', Auth.validate('patch:cate'), cates.patch);
-router.delete('/cates/:id', Auth.validate('delete:cate'), cates.delete);
+// router.get('/cates', Auth.validate('get:cate'), cates.get);
+// router.post('/cates', Auth.validate('post:cate'), cates.post);
+// router.patch('/cates/:id', Auth.validate('patch:cate'), cates.patch);
+// router.delete('/cates/:id', Auth.validate('delete:cate'), cates.delete);
+
+// router.get('/notes', Auth.validate('get:note'), notes.get);
+// router.post('/notes', Auth.validate('post:note'), notes.post);
+// router.patch('/notes/:id', Auth.validate('patch:note'), notes.patch);
+// router.delete('/notes/:id', Auth.validate('delete:note'), notes.delete);
 
 
 // catch errors emitted during holding requests
