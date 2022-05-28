@@ -1,7 +1,7 @@
 import { Pool, PoolConfig, PoolClient } from "pg";
 
 
-const db = new Pool({
+const pool = new Pool({
 	max: parseInt(process.env.DATABASE_MAX_CONNECTION, 10) || 10,
 	host: process.env.DATABASE_HOST || 'localhost',
 	user: process.env.DATABASE_USER || '',
@@ -13,5 +13,5 @@ const db = new Pool({
 
 
 export {
-	db,
+	pool,
 }

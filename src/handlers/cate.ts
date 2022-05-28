@@ -1,11 +1,11 @@
 import { Middleware } from "koa";
-import { db } from "./db";
+import { pool } from "./db";
 import { ICate, Cate } from "../models/cate";
 import { Logger } from "../logger";
 
 
 const getAll: Middleware = async (ctx, next) => {
-	const cate = new Cate(db);
+	const cate = new Cate(pool);
 	const cates = await cate.getAll();
 	ctx.body = {
 		success: true,
@@ -21,7 +21,7 @@ const insert: Middleware = async (ctx, next) => {
 		ctx.throw(422);
 	}
 
-	const cate = new Cate(db, {
+	const cate = new Cate(pool, {
 		title,
 		id: null,
 	});
@@ -49,7 +49,7 @@ const update: Middleware = async (ctx, next) => {
 		ctx.throw(422);
 	}
 
-	const cate = new Cate(db, {
+	const cate = new Cate(pool, {
 		id,
 		title,
 	});
@@ -77,7 +77,7 @@ const remove: Middleware = async (ctx, next) => {
 		ctx.throw(422);
 	}
 
-	const cate = new Cate(db, {
+	const cate = new Cate(pool, {
 		id,
 		title: null,
 	});

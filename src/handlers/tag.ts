@@ -1,11 +1,11 @@
 import { Middleware } from "koa";
-import { db } from "./db";
+import { pool } from "./db";
 import { ITag, Tag } from "../models/tag";
 import { Logger } from "../logger";
 
 
 const getAll: Middleware = async (ctx, next) => {
-	const tag = new Tag(db);
+	const tag = new Tag(pool);
 	const tags = await tag.getAll();
 	ctx.body = {
 		success: true,
@@ -21,7 +21,7 @@ const insert: Middleware = async (ctx, next) => {
 		ctx.throw(422);
 	}
 
-	const tag = new Tag(db, {
+	const tag = new Tag(pool, {
 		title,
 		id: null,
 	});
@@ -49,7 +49,7 @@ const update: Middleware = async (ctx, next) => {
 		ctx.throw(422);
 	}
 
-	const tag = new Tag(db, {
+	const tag = new Tag(pool, {
 		id,
 		title,
 	});
@@ -77,7 +77,7 @@ const remove: Middleware = async (ctx, next) => {
 		ctx.throw(422);
 	}
 
-	const tag = new Tag(db, {
+	const tag = new Tag(pool, {
 		id,
 		title: null,
 	});
