@@ -3,12 +3,12 @@ import { Logger } from "../logger";
 
 
 interface INote {
-	id: number;
+	id?: number;
 	title: string;
-	contents?: string;
+	content?: string;
 	poster?: string;
-	createDate: Date;
-	editDate: Date;
+	createDate?: string;
+	editDate?: string;
 	cateId: number;
 	isDraft: boolean;
 }
@@ -16,11 +16,11 @@ interface INote {
 class Note {
 
 	pool: Pool;
-	fields: Map<string, any>;
+	data: INote;
 
-	constructor(pool: Pool, data?: Map<string, any>) {
+	constructor(pool: Pool, data?: INote) {
 		this.pool = pool;
-		this.fields = data;
+		this.data = data;
 	}
 
 	static date2string(d: Date): string {
@@ -41,10 +41,10 @@ class Note {
 				list.push({
 					id: row.id,
 					title: row.title,
-					contents: row.contents,
+					content: row.content,
 					poster: row.poster,
-					createDate: row.create_date,
-					editDate: row.edit_date,
+					createDate: Note.date2string(row.create_date),
+					editDate: Note.date2string(row.edit_date),
 					cateId: row.cate_id,
 					isDraft: row.is_draft,
 				});
@@ -55,7 +55,7 @@ class Note {
 
 	async probeExistedByID(): Promise<boolean> {
 		const sql = 'select exists (select id from notes where id=$1) as existed';
-		const id = this.fields.get('id');
+		const id = this.data.id;
 		const result = await this.pool.query(sql, [id]);
 		if (result.rows[0].existed) {
 			return Promise.resolve(true);
@@ -65,7 +65,7 @@ class Note {
 
 	async probeExistedByTitle(): Promise<boolean> {
 		const sql = 'select exists (select id from notes where title=$1) as existed';
-		const title = this.fields.get('title');
+		const title = this.data.title;
 		const result = await this.pool.query(sql, [title]);
 		if (result.rows[0].existed) {
 			return Promise.resolve(true);
@@ -80,43 +80,72 @@ class Note {
 	}
 
 	async insert(): Promise<number> {
-		const fields = this.fields;
-		const $s: string[] = [];
-		const keys: string[] = [];
-		const values: any[] = [];
+		const data = this.data;
+		const createDate = Note.date2string(new Date());
+		const keys: string[] = ['title', 'content', 'poster', 'cate_id', 'is_draft', 'create_date', 'edit_date'];
+		const $s: string[] = ['$1', '$2', '$3', '$4', '$5', '$6', '$7'];
+		const values: any[] = [data.title, data.content, data.poster, data.cateId, data.isDraft, createDate, createDate];
 
-		let i = 0;
-		for (const item of fields) {
-			$s.push(`$${i+1}`);
-			i++;
-			keys.push(item[0]);
-			values.push(item[1]);
-		}
-
-		const sql = `insert into notes (${values.join(',')}) values (${$s.join(',')}) returning id`;
+		const sql = `insert into notes (${keys.join(',')}) values (${$s.join(',')}) returning id`;
 		const result = await this.pool.query(sql, values);
 		return Promise.resolve(result.rows[0].id);
 	}
 
-	async update() {
-		const fields = this.fields;
-		const keyValues: string[] = [];
-		const values: string[] = [];
+	async update(
+				title?: string,
+				content?: string,
+				poster?: string,
+				cateId?: number,
+				isDraft?: boolean
+			) {
 
-		let i = 0;
-		for (const item of fields) {
-			keyValues.push(`${item[0]}=$${i+1}`);
-			values.push(`$${i+1}`);
-			i++;
+		const data = this.data;
+		const keys: string[] = [];
+		const values: any[] = [];
+
+		if (title) {
+			keys.push('title')
+			values.push(title)
 		}
 
-		const sql = `update notes set ${keyValues.join(',')} where id=$${i}`;
-		await this.pool.query(sql, [...values, fields.get('id')]);
+		if (content) {
+			keys.push('content')
+			values.push(content)
+		}
+
+		if (poster) {
+			keys.push('poster')
+			values.push(poster)
+		}
+
+		if (cateId) {
+			keys.push('cate_id')
+			values.push(cateId)
+		}
+
+		if (isDraft) {
+			keys.push('isDraft')
+			values.push(isDraft)
+		}
+
+		const editDate = Note.date2string(new Date());
+		keys.push('edit_date')
+		values.push(editDate)
+
+		let valueIndex = 0;
+		const keyValuePair: string[] = [];
+		for (const key of keys) {
+			keyValuePair.push(`${key}=${values[valueIndex]}`);
+			valueIndex++;
+		}
+
+		const sql = `update notes set ${keys.join(',')} where id=$${valueIndex}`;
+		await this.pool.query(sql, [...values, data.id]);
 	}
 
 	async remove() {
 		const sql = 'delete from notes where id=$1';
-		const id = this.fields.get('id');
+		const id = this.data.id;
 		await this.pool.query(sql, [id]);
 	}
 

@@ -10,6 +10,7 @@ import errorCatch from "./errors";
 import Auth from "./auth/validate";
 import * as Tag from "./handlers/tag";
 import * as Cate from "./handlers/cate";
+import * as Note from "./handlers/note";
 
 const app = new Koa();
 const router = new Router();
@@ -40,8 +41,8 @@ router.post('/cates', Auth.validate('post:cate'), Cate.insert);
 router.patch('/cates/:id', Auth.validate('patch:cate'), Cate.update);
 router.delete('/cates/:id', Auth.validate('delete:cate'), Cate.remove);
 
-// router.get('/notes', Auth.validate('get:note'), notes.get);
-// router.post('/notes', Auth.validate('post:note'), notes.post);
+router.get('/notes', Auth.validate('get:note'), Note.getAll);
+router.post('/notes', Auth.validate('post:note'), Note.insert);
 // router.patch('/notes/:id', Auth.validate('patch:note'), notes.patch);
 // router.delete('/notes/:id', Auth.validate('delete:note'), notes.delete);
 
