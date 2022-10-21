@@ -6,7 +6,7 @@ const pool = new Pool({
 	host: process.env.DATABASE_HOST || 'localhost',
 	user: process.env.DATABASE_USER || '',
 	password: process.env.DATABASE_PASSWD || '',
-	database: process.env.DATABASE_NAME || 'postgres',
+	database: process.env.DATABASE_NAME || 'notes',
 	idleTimeoutMillis: 30 * 1000,
 	connectionTimeoutMillis: 5 * 1000,
 });
