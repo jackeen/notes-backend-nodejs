@@ -18,7 +18,6 @@ class NoteForm extends Form {
 
 	constructor(ctx: ParameterizedContext) {
 		super('note');
-		// ctx.method
 		this.loadBodyValues(ctx,
 							this.title,
 							this.content,
@@ -39,5 +38,5 @@ class NoteForm extends Form {
 }
 
 export {
-	NoteForm
+	NoteForm,
 }

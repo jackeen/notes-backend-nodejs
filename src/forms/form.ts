@@ -2,7 +2,6 @@ import { ParameterizedContext } from "koa";
 
 import { IField, Field } from "./field";
 import SelectField from "./select.field";
-import FormError from "./form.error";
 import { Validator,
 		 isBoolean,
 		 rangeInteger,
@@ -13,7 +12,10 @@ import { Validator,
 class Form {
 
 	name: string;
-	fields: Field[];
+	private _fields: Field[];
+
+	private _available: boolean = true;
+	private _unavailableField: string;
 
 	constructor(name: string) {
 		this.name = name;
@@ -21,38 +23,54 @@ class Form {
 
 	loadBodyValues(ctx: ParameterizedContext, ...fields: Field[]) {
 		const body = ctx.request.body;
-		const bodyMap = new Map();
 
 		if (!body) {
-			throw new FormError('', '', this.name, '');
+			this._available = false;
+			return;
 		}
-
-		Object.entries(body).forEach(([k, v], i) => {
-			bodyMap.set(k, v);
-		});
 
 		for (const field of fields) {
-			field.value = bodyMap.get(field.name);
+			field.value = body[field.name];
 		}
-		this.fields = fields;
+		this._fields = fields;
 	}
 
-	validate() {
-		const fields = this.fields;
+	validate(): boolean{
+
+		if (!this._available) {
+			return false;
+		}
+
+		const fields = this._fields;
 		for (const field of fields) {
 			const validators = field.validators;
 			for (const validator of validators) {
 				if (!validator(field.value)) {
-					throw new FormError('', '', this.name, field.name);
+					this._available = false;
+					this._unavailableField = field.name;
+					return false;
 				}
 			}
 		}
+
+		return true;
+	}
+
+	getFormError(): string {
+		let error: string = 'form';
+		if (!this._available) {
+			error += `-${this.name}`;
+			if (this._unavailableField) {
+				error += `-${this._unavailableField}`;
+			}
+			return error;
+		}
+		return null;
 	}
 }
 
 export {
 	Form,
-	FormError,
 	Field,
 	SelectField,
 	rangeInteger,
