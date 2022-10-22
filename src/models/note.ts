@@ -17,11 +17,28 @@ class Note {
 
 	pool: Pool;
 	data: INote;
+	properties: Map<string, any>;
 
-	constructor(pool: Pool, data?: INote) {
+	constructor(pool: Pool, prop?: Map<string, any>) {
 		this.pool = pool;
-		this.data = data;
+		this.data = {
+			id: prop.get('id'),
+			title: prop.get('title'),
+			content: prop.get('content'),
+			poster: prop.get('poster'),
+			isDraft: prop.get('isDraft'),
+			cateId: prop.get('cateId'),
+			// createDate: null,
+			// editDate: null,
+		};
+		this.properties = prop;
 	}
+
+	// getDataMap(): Map<string, any> {
+	// 	return new Map<string, any>([
+	// 		['id', this.data.id],
+	// 	]);
+	// }
 
 	static date2string(d: Date): string {
 		const year = d.getFullYear();
@@ -91,62 +108,33 @@ class Note {
 		return Promise.resolve(result.rows[0].id);
 	}
 
-	async update(
-				title?: string,
-				content?: string,
-				poster?: string,
-				cateId?: number,
-				isDraft?: boolean
-			) {
-
-		const data = this.data;
+	async update() {
 		const keys: string[] = [];
 		const values: any[] = [];
 
-		if (title) {
-			keys.push('title')
-			values.push(title)
-		}
-
-		if (content) {
-			keys.push('content')
-			values.push(content)
-		}
-
-		if (poster) {
-			keys.push('poster')
-			values.push(poster)
-		}
-
-		if (cateId) {
-			keys.push('cate_id')
-			values.push(cateId)
-		}
-
-		if (isDraft) {
-			keys.push('isDraft')
-			values.push(isDraft)
+		for (const [k, v] of this.properties) {
+			keys.push(k);
+			values.push(v);
 		}
 
 		const editDate = Note.date2string(new Date());
 		keys.push('edit_date')
 		values.push(editDate)
 
-		let valueIndex = 0;
+		let valueIndex = 1;
 		const keyValuePair: string[] = [];
 		for (const key of keys) {
-			keyValuePair.push(`${key}=${values[valueIndex]}`);
+			keyValuePair.push(`${key}=$${valueIndex}`);
 			valueIndex++;
 		}
 
-		const sql = `update notes set ${keys.join(',')} where id=$${valueIndex}`;
-		await this.pool.query(sql, [...values, data.id]);
+		const sql = `update notes set ${keyValuePair.join(',')} where id=$${valueIndex}`;
+		await this.pool.query(sql, [...values, this.data.id]);
 	}
 
 	async remove() {
 		const sql = 'delete from notes where id=$1';
-		const id = this.data.id;
-		await this.pool.query(sql, [id]);
+		await this.pool.query(sql, [this.data.id]);
 	}
 
 }

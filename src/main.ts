@@ -43,8 +43,8 @@ router.delete('/cates/:id', Auth.validate('delete:cate'), Cate.remove);
 
 router.get('/notes', Auth.validate('get:note'), Note.getAll);
 router.post('/notes', Auth.validate('post:note'), Note.insert);
-// router.patch('/notes/:id', Auth.validate('patch:note'), notes.patch);
-// router.delete('/notes/:id', Auth.validate('delete:note'), notes.delete);
+router.patch('/notes/:id', Auth.validate('patch:note'), Note.update);
+router.delete('/notes/:id', Auth.validate('delete:note'), Note.remove);
 
 
 // catch errors emitted during holding requests

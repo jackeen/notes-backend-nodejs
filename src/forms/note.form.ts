@@ -1,5 +1,5 @@
 import { ParameterizedContext } from "koa";
-import { INote } from "../models/note";
+
 import { Form,
 		 Field,
 		 isBoolean,
@@ -24,16 +24,6 @@ class NoteForm extends Form {
 							this.poster,
 							this.isDraft,
 							this.cateId);
-	}
-
-	formatData(): INote {
-		return {
-			title: this.title.value,
-			content: this.content.value,
-			poster: this.poster.value,
-			isDraft: this.isDraft.value,
-			cateId: this.cateId.value,
-		}
 	}
 }
 
