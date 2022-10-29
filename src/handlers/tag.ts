@@ -39,7 +39,7 @@ const insert: Middleware = async (ctx, next) => {
 
 
 const update: Middleware = async (ctx, next) => {
-	const id = ctx.params.get('id');
+	const id = ctx.params.getNumber('id');
 	if (id === undefined) {
 		ctx.throw(422);
 	}
@@ -72,7 +72,7 @@ const update: Middleware = async (ctx, next) => {
 
 
 const remove: Middleware = async (ctx, next) => {
-	const id = ctx.params.get('id');
+	const id = ctx.params.getNumber('id');
 	if (id === undefined) {
 		ctx.throw(422);
 	}
