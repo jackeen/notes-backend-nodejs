@@ -21,17 +21,19 @@ class Note {
 
 	constructor(pool: Pool, prop?: Map<string, any>) {
 		this.pool = pool;
-		this.data = {
-			id: prop.get('id'),
-			title: prop.get('title'),
-			content: prop.get('content'),
-			poster: prop.get('poster'),
-			isDraft: prop.get('isDraft'),
-			cateId: prop.get('cateId'),
-			// createDate: null,
-			// editDate: null,
-		};
-		this.properties = prop;
+		if (prop) {
+			this.data = {
+				id: prop.get('id'),
+				title: prop.get('title'),
+				content: prop.get('content'),
+				poster: prop.get('poster'),
+				isDraft: prop.get('isDraft'),
+				cateId: prop.get('cateId'),
+				// createDate: null,
+				// editDate: null,
+			};
+			this.properties = prop;
+		}
 	}
 
 	// getDataMap(): Map<string, any> {
