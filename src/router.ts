@@ -5,10 +5,12 @@
 // import path from "path";
 import { Middleware } from "koa";
 
+import CustomParam from "./router.param";
+
 // for router using it to collect restful params during request
 declare module "koa" {
 	interface DefaultContext {
-		params: Map<string, any>;
+		params: CustomParam;
 	}
 }
 
@@ -100,7 +102,7 @@ class Router {
 		this._attachHandler(trieNode, method, handler);
 	}
 
-	private _reachRouterNode (endpoint: string, params: Map<string, any>): RouterNode {
+	private _reachRouterNode (endpoint: string, params: CustomParam): RouterNode {
 		const pathArr = this._spiltEndpoint(endpoint);
 
 		let trieNode = this.routeTrie;
@@ -162,7 +164,7 @@ class Router {
 		return async (ctx, next) => {
 			const endpoint = ctx.request.path;
 			const method = ctx.request.method;
-			const params = new Map<string, any>();
+			const params = new CustomParam();
 			const node = this._reachRouterNode(endpoint, params);
 
 			if (node === null) {
