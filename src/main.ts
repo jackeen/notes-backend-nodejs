@@ -15,6 +15,13 @@ import * as Note from "./handlers/note";
 const app = new Koa();
 const router = new Router();
 
+
+app.use(async (ctx, next) => {
+	ctx.set('Access-Control-Allow-Origin', '*');
+	await next();
+});
+
+
 // healthy info
 router.get('/', (ctx) => {
 	ctx.body = {
@@ -56,8 +63,6 @@ app.use(bodyParser());
 
 // add all handler
 app.use(router.route());
-
-
 
 
 const port = parseInt(process.env.SERVER_PORT, 10) || 8080;
