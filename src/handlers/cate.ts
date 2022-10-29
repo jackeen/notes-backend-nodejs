@@ -5,8 +5,16 @@ import { Logger } from "../logger";
 
 
 const getAll: Middleware = async (ctx, next) => {
+	const withNotesCount = ctx.request.query.c;
 	const cate = new Cate(pool);
-	const cates = await cate.getAll();
+
+	let cates: ICate[];
+	if (withNotesCount === '1') {
+		cates = await cate.getAllWithNotesCount();
+	} else {
+		cates = await cate.getAll();
+	}
+
 	ctx.body = {
 		success: true,
 		count: cates.length,
@@ -39,7 +47,7 @@ const insert: Middleware = async (ctx, next) => {
 
 
 const update: Middleware = async (ctx, next) => {
-	const id = ctx.params.get('id');
+	const id = ctx.params.getNumber('id');
 	if (id === undefined) {
 		ctx.throw(422);
 	}
@@ -72,7 +80,7 @@ const update: Middleware = async (ctx, next) => {
 
 
 const remove: Middleware = async (ctx, next) => {
-	const id = ctx.params.get('id');
+	const id = ctx.params.getNumber('id');
 	if (id === undefined) {
 		ctx.throw(422);
 	}

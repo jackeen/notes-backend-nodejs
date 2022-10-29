@@ -5,6 +5,7 @@ import { Logger } from "../logger";
 interface ICate {
 	id: number;
 	title: string;
+	notesCount?: number;
 }
 
 class Cate implements ICate {
@@ -27,6 +28,7 @@ class Cate implements ICate {
 				list.push({
 					id: row.id,
 					title: row.title,
+					notesCount: row.notes_count,
 				});
 			});
 		}
@@ -53,6 +55,19 @@ class Cate implements ICate {
 
 	async getAll(): Promise<ICate[]> {
 		const sql = 'select * from cates order by id';
+		const result = await this.pool.query(sql);
+		return Promise.resolve(this._formatResult(result));
+	}
+
+	async getAllWithNotesCount(): Promise<ICate[]> {
+		const sql = `
+			select cates.id, cates.title, count(notes.id)::Integer as notes_count
+			from cates
+			left join notes
+			on cates.id = notes.cate_id
+			group by cates.id
+			order by cates.id;
+		`;
 		const result = await this.pool.query(sql);
 		return Promise.resolve(this._formatResult(result));
 	}
