@@ -49,6 +49,7 @@ router.patch('/cates/:id', Auth.validate('patch:cate'), Cate.update);
 router.delete('/cates/:id', Auth.validate('delete:cate'), Cate.remove);
 
 router.get('/notes', Auth.validate('get:note'), Note.getAll);
+router.get('/notes/:id', Auth.validate('get:note'), Note.fetchDetail);
 router.post('/notes', Auth.validate('post:note'), Note.insert);
 router.patch('/notes/:id', Auth.validate('patch:note'), Note.update);
 router.delete('/notes/:id', Auth.validate('delete:note'), Note.remove);

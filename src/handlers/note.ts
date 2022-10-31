@@ -17,6 +17,26 @@ const getAll: Middleware = async (ctx, next) => {
 	}
 }
 
+const fetchDetail: Middleware = async (ctx, next) => {
+	const id = ctx.params.getNumber('id');
+	if (id === undefined) {
+		ctx.throw(422);
+	}
+
+	const note = new Note(pool, new Map<string, any>([['id', id]]));
+
+	if (!await note.probeExistedByID()) {
+		ctx.throw(404);
+	}
+
+	const detail = await note.fetchDetail();
+
+	ctx.body = {
+		success: true,
+		note: detail,
+	}
+}
+
 const insert: Middleware = async (ctx, next) => {
 	const form = new NoteForm(ctx);
 	if (!form.validate()) {
@@ -88,6 +108,7 @@ const remove: Middleware = async (ctx, next) => {
 
 export {
 	getAll,
+	fetchDetail,
 	insert,
 	update,
 	remove,

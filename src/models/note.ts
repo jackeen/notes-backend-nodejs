@@ -98,6 +98,13 @@ class Note {
 		return Promise.resolve(this._formatResult(result));
 	}
 
+	async fetchDetail(): Promise<INote> {
+		const sql = 'select * from notes where id=$1';
+		const result = await this.pool.query(sql, [this.data.id]);
+		this.data = this._formatResult(result)[0];
+		return Promise.resolve(this.data);
+	}
+
 	async insert(): Promise<number> {
 		const data = this.data;
 		const createDate = Note.date2string(new Date());
