@@ -5,12 +5,14 @@
 // import path from "path";
 import { Middleware } from "koa";
 
-import CustomParam from "./router.param";
+import { CustomParam } from "./router.param";
+import { IPayLoad } from "./auth/validate";
 
 // for router using it to collect restful params during request
 declare module "koa" {
 	interface DefaultContext {
 		params: CustomParam;
+		user: IPayLoad;
 	}
 }
 

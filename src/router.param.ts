@@ -20,4 +20,6 @@ class CustomParam {
 	}
 }
 
-export default CustomParam;
+export {
+	CustomParam,
+};
