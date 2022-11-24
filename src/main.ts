@@ -4,13 +4,14 @@ import Koa from "koa";
 import bodyParser from "koa-bodyparser"
 
 import Router from "./router";
-import {Logger} from "./logger";
+import { Logger } from "./logger";
 import errorCatch from "./errors";
 
-import Auth from "./auth/validate";
+import { validate } from "./auth/validate";
 import * as Tag from "./handlers/tag";
 import * as Cate from "./handlers/cate";
 import * as Note from "./handlers/note";
+import * as User from "./handlers/user";
 
 const app = new Koa();
 const router = new Router();
@@ -25,41 +26,38 @@ app.use(async (ctx, next) => {
 // healthy info
 router.get('/', (ctx) => {
 	ctx.body = {
+		success: true,
 		version: 'v1.0.0',
-		message: 'The notes manager based on nodejs and postgres.',
+		information: 'The notes manager based on nodejs and postgres.',
 	}
 });
 
-// router.get('/cates/:cate_id/notes/:note_id', (ctx) => {
-// 	ctx.body = {
-// 		cateId: ctx.params.get('cate_id'),
-// 		noteId: ctx.params.get('note_id'),
-// 	}
-// });
+router.post('/user/login', User.login);
+router.post('/users', User.createNew);
+router.get('/users/check/:user_name', User.checkExisted);
 
+router.get('/tags', validate('get:tag'), Tag.getAll);
+router.post('/tags', validate('post:tag'), Tag.insert);
+router.patch('/tags/:id', validate('patch:tag'), Tag.update);
+router.delete('/tags/:id', validate('delete:tag'), Tag.remove);
 
-router.get('/tags', Auth.validate('get:tag'), Tag.getAll);
-router.post('/tags', Auth.validate('post:tag'), Tag.insert);
-router.patch('/tags/:id', Auth.validate('patch:tag'), Tag.update);
-router.delete('/tags/:id', Auth.validate('delete:tag'), Tag.remove);
+router.get('/cates', validate('get:cate'), Cate.getAll);
+router.post('/cates', validate('post:cate'), Cate.insert);
+router.patch('/cates/:id', validate('patch:cate'), Cate.update);
+router.delete('/cates/:id', validate('delete:cate'), Cate.remove);
 
-router.get('/cates', Auth.validate('get:cate'), Cate.getAll);
-router.post('/cates', Auth.validate('post:cate'), Cate.insert);
-router.patch('/cates/:id', Auth.validate('patch:cate'), Cate.update);
-router.delete('/cates/:id', Auth.validate('delete:cate'), Cate.remove);
-
-router.get('/notes', Auth.validate('get:note'), Note.getAll);
-router.get('/notes/:id', Auth.validate('get:note'), Note.fetchDetail);
-router.post('/notes', Auth.validate('post:note'), Note.insert);
-router.patch('/notes/:id', Auth.validate('patch:note'), Note.update);
-router.delete('/notes/:id', Auth.validate('delete:note'), Note.remove);
+router.get('/notes', validate('get:note'), Note.getAll);
+router.get('/notes/:id', validate('get:note'), Note.fetchDetail);
+router.post('/notes', validate('post:note'), Note.insert);
+router.patch('/notes/:id', validate('patch:note'), Note.update);
+router.delete('/notes/:id', validate('delete:note'), Note.remove);
 
 
 // catch errors emitted during holding requests
 // it also log this information and the traffic status
 app.use(errorCatch);
 
-//
+// parsing body automatically
 app.use(bodyParser());
 
 // add all handler
