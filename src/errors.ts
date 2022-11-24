@@ -1,9 +1,9 @@
 import { Middleware, HttpError } from "koa";
 
-import {Logger, TrafficSign} from "./logger";
+import { Logger, TrafficSign } from "./logger";
 
 const errorCatch: Middleware = async (ctx, next) => {
-	// catching and standardizing the http errors
+	// catching and standardizing the errors
 	try {
 		await next();
 	} catch (err) {
