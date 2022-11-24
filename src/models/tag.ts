@@ -1,4 +1,11 @@
-import { Pool, PoolClient, QueryResult, QueryResultRow } from "pg";
+/**
+ *
+ *
+ */
+
+import { QueryResult, QueryResultRow } from "pg";
+
+import { Model } from "./model";
 import { Logger } from "../logger";
 
 
@@ -7,17 +14,18 @@ interface ITag {
 	title: string;
 }
 
-class Tag implements ITag{
+class Tag extends Model{
 
-	pool: Pool;
+	data: ITag;
 
-	id: number;
-	title: string;
-
-	constructor(pool: Pool, tag?: ITag) {
-		this.pool = pool;
-		this.id = tag?.id;
-		this.title = tag?.title;
+	constructor(prop?: Map<string, any>) {
+		super();
+		if (prop) {
+			this.data = {
+				id: prop.get('id'),
+				title: prop.get('title'),
+			}
+		}
 	}
 
 	private _formatResult(result: QueryResult): ITag[] {
@@ -35,7 +43,7 @@ class Tag implements ITag{
 
 	async probeExistedByID(): Promise<boolean> {
 		const sql = 'select exists (select id from tags where id=$1) as existed';
-		const result = await this.pool.query(sql, [this.id]);
+		const result = await this.pool.query(sql, [this.data.id]);
 		if (result.rows[0].existed) {
 			return Promise.resolve(true);
 		}
@@ -44,7 +52,7 @@ class Tag implements ITag{
 
 	async probeExistedByTitle(): Promise<boolean> {
 		const sql = 'select exists (select id from tags where title=$1) as existed';
-		const result = await this.pool.query(sql, [this.title]);
+		const result = await this.pool.query(sql, [this.data.title]);
 		if (result.rows[0].existed) {
 			return Promise.resolve(true);
 		}
@@ -59,18 +67,18 @@ class Tag implements ITag{
 
 	async insert(): Promise<number> {
 		const sql = 'insert into tags (title) values ($1) returning id';
-		const result = await this.pool.query(sql, [this.title]);
+		const result = await this.pool.query(sql, [this.data.title]);
 		return Promise.resolve(result.rows[0].id);
 	}
 
 	async update() {
 		const sql = 'update tags set title=$1 where id=$2';
-		await this.pool.query(sql, [this.title, this.id]);
+		await this.pool.query(sql, [this.data.title, this.data.id]);
 	}
 
 	async remove() {
 		const sql = 'delete from tags where id=$1';
-		await this.pool.query(sql, [this.id]);
+		await this.pool.query(sql, [this.data.id]);
 	}
 }
 

@@ -1,12 +1,9 @@
 import { ParameterizedContext } from "koa";
 
+import { Methods } from "../auth/methods";
 import { IField, Field } from "./field";
 import SelectField from "./select.field";
-import { Validator,
-		 isBoolean,
-		 rangeInteger,
-		 stringLength,
-		} from "./validators";
+import { Validator } from "./validators";
 
 
 class Form {
@@ -21,6 +18,11 @@ class Form {
 
 	constructor(name: string) {
 		this.name = name;
+	}
+
+	updateFieldValue(field: Field, value: any) {
+		field.value = value;
+		this._existedProperties.set(field.name, value);
 	}
 
 	loadBodyValues(ctx: ParameterizedContext, ...fields: Field[]) {
@@ -57,7 +59,7 @@ class Form {
 		const fields = this._fields;
 		const method = this.method;
 		for (const field of fields) {
-			if (method.toLowerCase() === 'patch' &&
+			if (method.toLowerCase() === Methods.PATCH &&
 				this._existedProperties.get(field.name) === undefined) {
 				continue;
 			}
@@ -91,7 +93,4 @@ export {
 	Form,
 	Field,
 	SelectField,
-	rangeInteger,
-	stringLength,
-	isBoolean,
 };

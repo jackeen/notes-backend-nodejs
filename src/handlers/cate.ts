@@ -1,12 +1,17 @@
+/**
+ * Category handler, which provides the organized way to hold notes.
+ *
+ */
+
 import { Middleware } from "koa";
-import { pool } from "./db";
+
 import { ICate, Cate } from "../models/cate";
-import { Logger } from "../logger";
+import { CateForm } from "../forms/cate.form";
 
 
 const getAll: Middleware = async (ctx, next) => {
 	const withNotesCount = ctx.request.query.c;
-	const cate = new Cate(pool);
+	const cate = new Cate();
 
 	let cates: ICate[];
 	if (withNotesCount === '1') {
@@ -24,15 +29,12 @@ const getAll: Middleware = async (ctx, next) => {
 
 
 const insert: Middleware = async (ctx, next) => {
-	const title = ctx.request.body.title;
-	if (!title) {
-		ctx.throw(422);
+	const form = new CateForm(ctx);
+	if (!form.validate()) {
+		ctx.throw(form.getFormError(), 422);
 	}
 
-	const cate = new Cate(pool, {
-		title,
-		id: null,
-	});
+	const cate = new Cate(form.getExistedProperties());
 
 	if (await cate.probeExistedByTitle()) {
 		ctx.throw(409);
@@ -48,19 +50,18 @@ const insert: Middleware = async (ctx, next) => {
 
 const update: Middleware = async (ctx, next) => {
 	const id = ctx.params.getNumber('id');
-	if (id === undefined) {
+	if (isNaN(id)) {
 		ctx.throw(422);
 	}
 
-	const title = ctx.request.body.title;
-	if (!title) {
-		ctx.throw(422);
+	const form = new CateForm(ctx);
+	if (!form.validate()) {
+		ctx.throw(form.getFormError(), 422);
 	}
 
-	const cate = new Cate(pool, {
-		id,
-		title,
-	});
+	const formData = form.getExistedProperties();
+	formData.set('id', id);
+	const cate = new Cate(formData);
 
 	if (!await cate.probeExistedByID()) {
 		ctx.throw(404);
@@ -85,10 +86,7 @@ const remove: Middleware = async (ctx, next) => {
 		ctx.throw(422);
 	}
 
-	const cate = new Cate(pool, {
-		id,
-		title: null,
-	});
+	const cate = new Cate(new Map<string, any>([['id', id]]));
 
 	if (!await cate.probeExistedByID()) {
 		ctx.throw(404);

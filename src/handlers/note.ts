@@ -1,15 +1,13 @@
 import { Middleware } from "koa";
 
-import { pool } from "./db";
 import { Logger } from "../logger";
-
 import { INote, Note } from "../models/note";
 import { NoteForm } from "../forms/note.form";
 
 
 const getAll: Middleware = async (ctx, next) => {
-	const note = new Note(pool);
-	const notes = await note.getAll();
+	const note = new Note();
+	const notes = await note.getAll(false);
 	ctx.body = {
 		success: true,
 		count: notes.length,
@@ -23,7 +21,7 @@ const fetchDetail: Middleware = async (ctx, next) => {
 		ctx.throw(422);
 	}
 
-	const note = new Note(pool, new Map<string, any>([['id', id]]));
+	const note = new Note(new Map<string, any>([['id', id]]));
 
 	if (!await note.probeExistedByID()) {
 		ctx.throw(404);
@@ -43,7 +41,7 @@ const insert: Middleware = async (ctx, next) => {
 		ctx.throw(form.getFormError(), 422);
 	}
 
-	const note = new Note(pool, form.getExistedProperties());
+	const note = new Note(form.getExistedProperties());
 	const noteExisted = await note.probeExistedByTitle();
 	if (noteExisted) {
 		ctx.throw(409);
@@ -69,7 +67,7 @@ const update: Middleware = async (ctx, next) => {
 
 	const formData = form.getExistedProperties();
 	formData.set('id', id);
-	const note = new Note(pool, formData);
+	const note = new Note(formData);
 
 	if (!await note.probeExistedByID()) {
 		ctx.throw(404);
@@ -92,7 +90,7 @@ const remove: Middleware = async (ctx, next) => {
 		ctx.throw(422);
 	}
 
-	const note = new Note(pool, new Map<string, any>([['id', id]]));
+	const note = new Note(new Map<string, any>([['id', id]]));
 
 	if (!await note.probeExistedByID()) {
 		ctx.throw(404);

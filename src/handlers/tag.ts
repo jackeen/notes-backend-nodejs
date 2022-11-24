@@ -1,11 +1,16 @@
+/**
+ *
+ */
+
 import { Middleware } from "koa";
-import { pool } from "./db";
+
+import { TagForm } from "../forms/tag.form";
 import { ITag, Tag } from "../models/tag";
 import { Logger } from "../logger";
 
 
 const getAll: Middleware = async (ctx, next) => {
-	const tag = new Tag(pool);
+	const tag = new Tag();
 	const tags = await tag.getAll();
 	ctx.body = {
 		success: true,
@@ -16,15 +21,12 @@ const getAll: Middleware = async (ctx, next) => {
 
 
 const insert: Middleware = async (ctx, next) => {
-	const title = ctx.request.body.title;
-	if (!title) {
-		ctx.throw(422);
+	const form = new TagForm(ctx);
+	if (!form.validate()) {
+		ctx.throw(form.getFormError(), 422);
 	}
 
-	const tag = new Tag(pool, {
-		title,
-		id: null,
-	});
+	const tag = new Tag(form.getExistedProperties());
 
 	if (await tag.probeExistedByTitle()) {
 		ctx.throw(409);
@@ -40,19 +42,18 @@ const insert: Middleware = async (ctx, next) => {
 
 const update: Middleware = async (ctx, next) => {
 	const id = ctx.params.getNumber('id');
-	if (id === undefined) {
+	if (isNaN(id)) {
 		ctx.throw(422);
 	}
 
-	const title = ctx.request.body.title;
-	if (!title) {
-		ctx.throw(422);
+	const form = new TagForm(ctx);
+	if (!form.validate()) {
+		ctx.throw(form.getFormError(), 422);
 	}
 
-	const tag = new Tag(pool, {
-		id,
-		title,
-	});
+	const formData = form.getExistedProperties();
+	formData.set('id', id);
+	const tag = new Tag(formData);
 
 	if (!await tag.probeExistedByID()) {
 		ctx.throw(404);
@@ -73,14 +74,11 @@ const update: Middleware = async (ctx, next) => {
 
 const remove: Middleware = async (ctx, next) => {
 	const id = ctx.params.getNumber('id');
-	if (id === undefined) {
+	if (isNaN(id)) {
 		ctx.throw(422);
 	}
 
-	const tag = new Tag(pool, {
-		id,
-		title: null,
-	});
+	const tag = new Tag(new Map<string, any>([['id', id]]));
 
 	if (!await tag.probeExistedByID()) {
 		ctx.throw(404);

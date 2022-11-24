@@ -1,6 +1,11 @@
-import { Pool, PoolClient, QueryResult, QueryResultRow } from "pg";
-import { Logger } from "../logger";
+/**
+ *
+ */
 
+import { Pool, PoolClient, QueryResult, QueryResultRow } from "pg";
+
+import { Logger } from "../logger";
+import { Model } from "./model";
 
 interface INote {
 	id?: number;
@@ -11,26 +16,25 @@ interface INote {
 	editDate?: string;
 	cateId: number;
 	isDraft: boolean;
+	tags?: string[];
 }
 
-class Note {
+class Note extends Model {
 
-	pool: Pool;
 	data: INote;
-	properties: Map<string, any>;
 
-	constructor(pool: Pool, prop?: Map<string, any>) {
-		this.pool = pool;
+	constructor(prop?: Map<string, any>) {
+		super();
 		if (prop) {
 			this.data = {
 				id: prop.get('id'),
 				title: prop.get('title'),
 				content: prop.get('content'),
 				poster: prop.get('poster'),
-				isDraft: prop.get('isDraft'),
-				cateId: prop.get('cateId'),
-				// createDate: null,
-				// editDate: null,
+				isDraft: prop.get('is_draft'),
+				cateId: prop.get('cate_id'),
+				createDate: '',
+				editDate: '',
 			};
 			this.properties = prop;
 		}
@@ -42,16 +46,16 @@ class Note {
 	// 	]);
 	// }
 
-	static date2string(d: Date): string {
-		const year = d.getFullYear();
-		const month = d.getMonth() + 1;
-		const day = d.getDate();
-		return `${year}-${month}-${day}`;
-	}
+	// static date2string(d: Date): string {
+	// 	const year = d.getFullYear();
+	// 	const month = d.getMonth() + 1;
+	// 	const day = d.getDate();
+	// 	return `${year}-${month}-${day}`;
+	// }
 
-	static string2date(s: string): Date {
-		return new Date(s);
-	}
+	// static string2date(s: string): Date {
+	// 	return new Date(s);
+	// }
 
 	private _formatResult(result: QueryResult): INote[] {
 		const list: INote[] = [];
@@ -62,11 +66,12 @@ class Note {
 					title: row.title,
 					content: row.content,
 					poster: row.poster,
-					createDate: Note.date2string(row.create_date),
-					editDate: Note.date2string(row.edit_date),
+					createDate: this.date2string(row.create_date),
+					editDate: this.date2string(row.edit_date),
 					cateId: row.cate_id,
 					isDraft: row.is_draft,
-				});
+					tags: (row.tags === null) ? [] : row.tags,
+				} as  INote);
 			});
 		}
 		return list;
@@ -92,14 +97,41 @@ class Note {
 		return Promise.resolve(false);
 	}
 
-	async getAll(): Promise<INote[]> {
-		const sql = 'select * from notes order by id';
+	async count(): Promise<number> {
+		const sql = 'select count(id) from notes';
+		const result = await this.pool.query(sql);
+		return Promise.resolve(result.rows[0].count);
+	}
+
+	private _getSQLForNotes(condition: string, includeTags: boolean): string {
+
+		if (!includeTags) {
+			return `select * from notes where ${condition} order by id`;
+		}
+
+		return `
+			select notes.*, array_agg(tags.title order by tags.id)
+			filter (where tags.title is not null) as tags
+			from notes
+			left join tags_notes
+			on notes.id = tags_notes.note_id
+			left join tags
+			on tags_notes.tag_id = tags.id
+			where ${condition}
+			group by notes.id
+			order by notes.id;
+		`;
+	}
+
+	async getAll(includeDraft: boolean): Promise<INote[]> {
+		const condition = (includeDraft) ? 'notes.is_draft = true' : 'true';
+		const sql = this._getSQLForNotes(condition, true);
 		const result = await this.pool.query(sql);
 		return Promise.resolve(this._formatResult(result));
 	}
 
 	async fetchDetail(): Promise<INote> {
-		const sql = 'select * from notes where id=$1';
+		const sql = this._getSQLForNotes('notes.id=$1', true);
 		const result = await this.pool.query(sql, [this.data.id]);
 		this.data = this._formatResult(result)[0];
 		return Promise.resolve(this.data);
@@ -107,7 +139,7 @@ class Note {
 
 	async insert(): Promise<number> {
 		const data = this.data;
-		const createDate = Note.date2string(new Date());
+		const createDate = this.date2string(new Date());
 		const keys: string[] = ['title', 'content', 'poster', 'cate_id', 'is_draft', 'create_date', 'edit_date'];
 		const $s: string[] = ['$1', '$2', '$3', '$4', '$5', '$6', '$7'];
 		const values: any[] = [data.title, data.content, data.poster, data.cateId, data.isDraft, createDate, createDate];
@@ -126,7 +158,7 @@ class Note {
 			values.push(v);
 		}
 
-		const editDate = Note.date2string(new Date());
+		const editDate = this.date2string(new Date());
 		keys.push('edit_date')
 		values.push(editDate)
 

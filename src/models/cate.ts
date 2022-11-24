@@ -1,5 +1,12 @@
+/**
+ *
+ *
+ */
+
 import { Pool, PoolClient, QueryResult, QueryResultRow } from "pg";
+
 import { Logger } from "../logger";
+import { Model } from "./model";
 
 
 interface ICate {
@@ -8,17 +15,18 @@ interface ICate {
 	notesCount?: number;
 }
 
-class Cate implements ICate {
+class Cate extends Model {
 
-	pool: Pool;
+	data: ICate;
 
-	id: number;
-	title: string;
-
-	constructor(pool: Pool, cate?: ICate) {
-		this.pool = pool;
-		this.id = cate?.id;
-		this.title = cate?.title;
+	constructor(prop?: Map<string, any>) {
+		super();
+		if (prop) {
+			this.data = {
+				id: prop.get('id'),
+				title: prop.get('title'),
+			}
+		}
 	}
 
 	private _formatResult(result: QueryResult): ICate[] {
@@ -37,7 +45,7 @@ class Cate implements ICate {
 
 	async probeExistedByID(): Promise<boolean> {
 		const sql = 'select exists (select id from cates where id=$1) as existed';
-		const result = await this.pool.query(sql, [this.id]);
+		const result = await this.pool.query(sql, [this.data.id]);
 		if (result.rows[0].existed) {
 			return Promise.resolve(true);
 		}
@@ -46,7 +54,7 @@ class Cate implements ICate {
 
 	async probeExistedByTitle(): Promise<boolean> {
 		const sql = 'select exists (select id from cates where title=$1) as existed';
-		const result = await this.pool.query(sql, [this.title]);
+		const result = await this.pool.query(sql, [this.data.title]);
 		if (result.rows[0].existed) {
 			return Promise.resolve(true);
 		}
@@ -74,18 +82,18 @@ class Cate implements ICate {
 
 	async insert(): Promise<number> {
 		const sql = 'insert into cates (title) values ($1) returning id';
-		const result = await this.pool.query(sql, [this.title]);
+		const result = await this.pool.query(sql, [this.data.title]);
 		return Promise.resolve(result.rows[0].id);
 	}
 
 	async update() {
 		const sql = 'update cates set title=$1 where id=$2';
-		await this.pool.query(sql, [this.title, this.id]);
+		await this.pool.query(sql, [this.data.title, this.data.id]);
 	}
 
 	async remove() {
 		const sql = 'delete from cates where id=$1';
-		await this.pool.query(sql, [this.id]);
+		await this.pool.query(sql, [this.data.id]);
 	}
 
 }
