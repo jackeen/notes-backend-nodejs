@@ -2,17 +2,16 @@
  * Using trie to implement the router for Koa.
  */
 
-// import path from "path";
+import path from "path";
+
 import { Middleware } from "koa";
 
 import { CustomParam } from "./router.param";
-import { IPayLoad } from "./auth/validate";
 
 // for router using it to collect restful params during request
 declare module "koa" {
 	interface DefaultContext {
 		params: CustomParam;
-		user: IPayLoad;
 	}
 }
 
@@ -27,13 +26,18 @@ interface RouterNode {
 
 class Router {
 
-	// private base: string;
-	// private baseHandler: Middleware;
+	private base: string;
+	private baseHandler: Middleware;
 	private routeTrie: RouterNode;
 
-	constructor(base?: string, ) {
-		// this.base = base;
+	constructor(base?: string, baseHandler?: Middleware) {
+		this.base = base;
+		this.baseHandler = baseHandler;
 		this.routeTrie = this._createRouterNode('');
+	}
+
+	private _throwError(err: string) {
+		throw new Error(`* Router: ${err}`);
 	}
 
 	private _createRouterNode (name: string): RouterNode {
@@ -49,7 +53,7 @@ class Router {
 
 	private _checkEndpoint (endpoint: string) {
 		if (endpoint === '') {
-			throw new Error('* The endpoint is empty.');
+			this._throwError('The endpoint is empty.');
 		}
 	}
 
@@ -89,6 +93,9 @@ class Router {
 
 	private _insertTrie (method: string, endpoint: string, handler: Middleware) {
 		this._checkEndpoint(endpoint);
+		if (this.base) {
+			endpoint = path.join(this.base, endpoint);
+		}
 
 		const pathArr = this._spiltEndpoint(endpoint);
 		let trieNode = this.routeTrie;
@@ -130,6 +137,10 @@ class Router {
 	}
 
 	private _nestMiddlewareList(handlers: Middleware[]): Middleware {
+		if (this.baseHandler) {
+			handlers.unshift(this.baseHandler);
+		}
+
 		return async (ctx, next) => {
 			const n = handlers.length;
 			function nest(i: number): Promise<any> {
@@ -189,5 +200,5 @@ class Router {
 
 }
 
-export type { Middleware };
+
 export default Router;
