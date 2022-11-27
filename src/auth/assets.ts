@@ -9,3 +9,7 @@
 	IMAGE = 'image',
 	USER = 'user',
 }
+
+export {
+	Assets,
+}
