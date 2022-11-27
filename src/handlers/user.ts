@@ -7,7 +7,7 @@ import bcrypt from "bcrypt"
 
 import { IUser, User } from "../models/user";
 import { UserForm } from "../forms/user.form";
-import { IPayLoad, generateToken } from "../auth/validate";
+import { IAuthPayLoad, generateToken } from "../auth/validate";
 import { Logger } from "../logger";
 
 const login: Middleware = async (ctx, next) => {
@@ -38,7 +38,7 @@ const login: Middleware = async (ctx, next) => {
 				userId: existedUser.id,
 				userName: existedUser.userName,
 				nickName: existedUser.nickName,
-			} as IPayLoad),
+			} as IAuthPayLoad),
 		}
 		return;
 	}
