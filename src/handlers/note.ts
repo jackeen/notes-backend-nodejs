@@ -3,6 +3,7 @@ import { Middleware } from "koa";
 import { Logger } from "../logger";
 import { INote, Note } from "../models/note";
 import { NoteForm } from "../forms/note.form";
+import { isVisitor } from "../auth/validate";
 
 
 const getAll: Middleware = async (ctx, next) => {
@@ -28,6 +29,10 @@ const fetchDetail: Middleware = async (ctx, next) => {
 	}
 
 	const detail = await note.fetchDetail();
+
+	if (isVisitor(ctx) && detail.isDraft) {
+		ctx.throw(404);
+	}
 
 	ctx.body = {
 		success: true,
