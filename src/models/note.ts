@@ -10,6 +10,7 @@ import { Model } from "./model";
 interface INote {
 	id?: number;
 	title: string;
+	description?:string;
 	content?: string;
 	poster?: string;
 	createDate?: string;
@@ -29,6 +30,7 @@ class Note extends Model {
 			this.data = {
 				id: prop.get('id'),
 				title: prop.get('title'),
+				description: prop.get('description'),
 				content: prop.get('content'),
 				poster: prop.get('poster'),
 				isDraft: prop.get('is_draft'),
@@ -64,6 +66,7 @@ class Note extends Model {
 				list.push({
 					id: row.id,
 					title: row.title,
+					description: row.description,
 					content: row.content,
 					poster: row.poster,
 					createDate: this.date2string(row.create_date),
@@ -140,9 +143,9 @@ class Note extends Model {
 	async insert(): Promise<number> {
 		const data = this.data;
 		const createDate = this.date2string(new Date());
-		const keys: string[] = ['title', 'content', 'poster', 'cate_id', 'is_draft', 'create_date', 'edit_date'];
-		const $s: string[] = ['$1', '$2', '$3', '$4', '$5', '$6', '$7'];
-		const values: any[] = [data.title, data.content, data.poster, data.cateId, data.isDraft, createDate, createDate];
+		const keys: string[] = ['title', 'description', 'content', 'poster', 'cate_id', 'is_draft', 'create_date', 'edit_date'];
+		const $s: string[] = ['$1', '$2', '$3', '$4', '$5', '$6', '$7', '$8'];
+		const values: any[] = [data.title, data.description, data.content, data.poster, data.cateId, data.isDraft, createDate, createDate];
 
 		const sql = `insert into notes (${keys.join(',')}) values (${$s.join(',')}) returning id`;
 		const result = await this.pool.query(sql, values);
